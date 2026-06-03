@@ -24,7 +24,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("D464M4664 HPC VALUE SCANNER")
-st.markdown("**Best Value for Money in High Performance Computing** — Blue = Strong Buy Signal")
+st.markdown("**Best Value for Money in High Performance Computing** — Blue = Good P/E | Red = Negative P/E")
 
 if st.button("🔄 SCAN HPC STOCKS NOW"):
     with st.spinner("Fetching HPC data..."):
@@ -80,13 +80,19 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
 
             st.markdown("### 🏆 Top Value HPC Stocks")
 
-            # Fixed Mercedes Blue Highlight for Value Score >= 75
-            def highlight_blue(row):
-                if row['Value Score'] >= 75:
-                    return ['background-color: #00A19C; color: white; font-weight: bold'] * len(row)
-                return [''] * len(row)
+            # Custom Styling: Blue for Positive P/E, Red for Negative P/E
+            def highlight_pe(row):
+                styles = [''] * len(row)
+                pe_val = row['Forward P/E']
+                
+                if isinstance(pe_val, (int, float)):
+                    if pe_val < 0:
+                        styles[2] = 'background-color: #FF3333; color: white; font-weight: bold;'  # Red for negative
+                    else:
+                        styles[2] = 'background-color: #00A19C; color: white; font-weight: bold;'  # Mercedes Blue for positive
+                return styles
 
-            styled_df = df.style.apply(highlight_blue, axis=1)
+            styled_df = df.style.apply(highlight_pe, axis=1)
             
             st.dataframe(styled_df, use_container_width=True, height=700)
 
@@ -94,11 +100,13 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
             st.markdown("### 📌 Metric Descriptions")
             st.markdown("""
             - **Price**: Current market price per share  
-            - **Forward P/E**: Expected price-to-earnings ratio. Lower = better value  
-            - **P/B**: Price-to-Book ratio. Lower = better value  
+            - **Forward P/E**: Expected price-to-earnings ratio.  
+              **Mercedes Blue** = Positive (generally better)  
+              **Red** = Negative (company expected to lose money — higher risk)
+            - **P/B**: Price-to-Book ratio. Lower usually = better value  
             - **Target Upside %**: Analyst expected price increase  
             - **Growth %**: Expected earnings growth rate  
-            - **Value Score**: Overall score (0-100). **Blue highlight = Strong Buy Signal** (≥75)
+            - **Value Score**: Overall score (0-100). Higher = better value for money
             """)
             
             csv = df.to_csv(index=False)
@@ -106,8 +114,7 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
         else:
             st.warning("No data received. Try again in a few minutes.")
 
-st.caption("**D464M4664 Principle**: Blue highlights show timely value in the HPC universe.")
-
+st.caption("**D464M4664 Principle**: Blue signals value, Red warns of risk. Always align with your own research.")
 
 
 
