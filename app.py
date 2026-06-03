@@ -3,7 +3,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 
-st.set_page_config(page_title="D484M4884 HPC Scanner", layout="wide")
+st.set_page_config(page_title="D464M4664 HPC Scanner", layout="wide")
 
 # Deep Black + Petronas Blue Theme
 st.markdown("""
@@ -23,12 +23,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("D484M4884 HPC VALUE SCANNER")
+st.title("D464M4664 HPC VALUE SCANNER")
 st.markdown("**Best Value for Money in High Performance Computing** — Blue = Strong Buy Signal")
-
-# Sidebar
-st.sidebar.header("Controls")
-num_stocks = st.sidebar.slider("Scan Size", 20, 120, 60)
 
 if st.button("🔄 SCAN HPC STOCKS NOW"):
     with st.spinner("Fetching HPC data..."):
@@ -40,7 +36,7 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
         data = []
         progress_bar = st.progress(0)
         
-        for i, t in enumerate(hpc_tickers[:num_stocks]):
+        for i, t in enumerate(hpc_tickers):
             try:
                 stock = yf.Ticker(t)
                 info = stock.info
@@ -84,34 +80,33 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
 
             st.markdown("### 🏆 Top Value HPC Stocks")
 
-            # Highlight function - Mercedes Blue for strong value
-            def highlight_value(val):
-                if isinstance(val, (int, float)) and val >= 75:
-                    return 'background-color: #00A19C; color: white; font-weight: bold;'
-                return ''
+            # Fixed Mercedes Blue Highlight for Value Score >= 75
+            def highlight_blue(row):
+                if row['Value Score'] >= 75:
+                    return ['background-color: #00A19C; color: white; font-weight: bold'] * len(row)
+                return [''] * len(row)
 
-            styled_df = df.style.applymap(highlight_value, subset=['Value Score'])
+            styled_df = df.style.apply(highlight_blue, axis=1)
             
             st.dataframe(styled_df, use_container_width=True, height=700)
 
             # Metric Descriptions
             st.markdown("### 📌 Metric Descriptions")
             st.markdown("""
-            - **Price**: Current market price per share
-            - **Forward P/E**: Expected P/E ratio. Lower is generally better value.
-            - **P/B**: Price-to-Book ratio. Lower usually indicates better value.
-            - **Target Upside %**: Analyst expected price increase.
-            - **Growth %**: Expected earnings growth.
+            - **Price**: Current market price per share  
+            - **Forward P/E**: Expected price-to-earnings ratio. Lower = better value  
+            - **P/B**: Price-to-Book ratio. Lower = better value  
+            - **Target Upside %**: Analyst expected price increase  
+            - **Growth %**: Expected earnings growth rate  
             - **Value Score**: Overall score (0-100). **Blue highlight = Strong Buy Signal** (≥75)
             """)
             
             csv = df.to_csv(index=False)
-            st.download_button("⬇️ Download HPC Report", csv, "d484m4884_hpc_picks.csv")
+            st.download_button("⬇️ Download HPC Report", csv, "d464m4664_hpc_picks.csv")
         else:
             st.warning("No data received. Try again in a few minutes.")
 
-st.caption("**D484M4884 Principle**: Blue highlights reveal timely value opportunities in the HPC mycelium network.")
-         
+st.caption("**D464M4664 Principle**: Blue highlights show timely value in the HPC universe.")
 
 
 
