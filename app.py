@@ -30,11 +30,11 @@ st.markdown("**Best Value for Money** — Categorized by Industry")
 st.sidebar.header("Controls")
 category = st.sidebar.selectbox("Select Industry/Category", 
     ["All", "HPC/AI", "Crypto", "Space", "Technology", "Healthcare", "Finance", "Energy", "Consumer"])
-num_stocks = st.sidebar.slider("Number of Stocks to Scan", 50, 500, 150)  # Lower default = faster
+num_stocks = st.sidebar.slider("Number of Stocks to Scan", 50, 300, 120)  # Reduced default for speed
 
-refresh = st.sidebar.button("Refresh Market Data")
+refresh = st.sidebar.button("🔄 REFRESH & RANK STOCKS")
 
-@st.cache_data(ttl=3600)  # Cache for 1 hour
+@st.cache_data(ttl=1800)
 def load_all_tickers():
     url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv"
     df = pd.read_csv(url)
@@ -81,7 +81,7 @@ def get_value_score(ticker):
         return None
 
 if refresh or st.button("🔄 SCAN & RANK STOCKS"):
-    with st.spinner("Connecting to market mycelium... (This may take 20-60 seconds)"):
+    with st.spinner("Connecting to market mycelium... (20-45 seconds)"):
         progress_bar = st.progress(0)
         data = []
         
@@ -91,24 +91,12 @@ if refresh or st.button("🔄 SCAN & RANK STOCKS"):
                 data.append(result)
             progress_bar.progress((i + 1) / len(all_tickers))
         
-        df = pd.DataFrame(data)
-        df = df.sort_values('Value Score', ascending=False)
-        
-        if category != "All":
-            df = df[df['Industry'].str.contains(category, case=False, na=False)]
-        
-        st.success(f"**D484M4884 Rankings Complete** — {len(df)} stocks analyzed")
+        if not data:
+            st.error("No data returned. Try again or reduce scan size.")
+        else:
+            df = pd.DataFrame(data)
+            df =
 
-        st.markdown("### 🏆 Top 10 Best Value for Money")
-        st.dataframe(df.head(10), use_container_width=True, height=400)
-
-        st.markdown("### 📊 Full Ranked List")
-        st.dataframe(df, use_container_width=True, height=700)
-
-        csv = df.to_csv(index=False)
-        st.download_button("⬇️ Download Full Report", csv, "d484m4884_value_picks.csv")
-
-st.caption("**D484M4884 Wisdom**: Speed improves with lower scan depth. True value rewards patience and consistency.")
 
     
      
