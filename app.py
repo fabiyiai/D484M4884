@@ -5,7 +5,7 @@ import numpy as np
 
 st.set_page_config(page_title="D484M4884 Value Scanner", layout="wide")
 
-# Deep Black + Petronas Blue Theme
+# Deep Black + Blue Theme
 st.markdown("""
 <style>
     .stApp {background-color: #000000; color: #E5E5E5;}
@@ -26,25 +26,23 @@ st.markdown("""
 st.title("D484M4884 VALUE SCANNER")
 st.markdown("**Best Value for Money** — Categorized by Industry")
 
-# Sidebar (Black)
+# Sidebar
 st.sidebar.header("Controls")
 category = st.sidebar.selectbox("Select Industry/Category", 
     ["All", "HPC/AI", "Crypto", "Space", "Technology", "Healthcare", "Finance", "Energy", "Consumer"])
+num_stocks = st.sidebar.slider("Number of Stocks to Scan", 50, 500, 150)  # Lower default = faster
+
 refresh = st.sidebar.button("Refresh Market Data")
 
-# Load S&P 500 + Focused Tickers
-@st.cache_data
+@st.cache_data(ttl=3600)  # Cache for 1 hour
 def load_all_tickers():
-    # S&P 500
     url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv"
     df = pd.read_csv(url)
     sp500 = df['Symbol'].tolist()
-    
-    # Add focused high-interest
     extra = ['RKLB','ASTS','LUNR','COIN','MSTR','RIOT','MARA']
     return list(set(sp500 + extra))
 
-all_tickers = load_all_tickers()
+all_tickers = load_all_tickers()[:num_stocks]
 
 def get_value_score(ticker):
     try:
@@ -82,13 +80,16 @@ def get_value_score(ticker):
     except:
         return None
 
-if refresh or st.button("🔄 REFRESH & RANK ALL STOCKS"):
-    with st.spinner("Scanning market mycelium..."):
+if refresh or st.button("🔄 SCAN & RANK STOCKS"):
+    with st.spinner("Connecting to market mycelium... (This may take 20-60 seconds)"):
+        progress_bar = st.progress(0)
         data = []
-        for t in all_tickers[:400]:   # Limit for speed
+        
+        for i, t in enumerate(all_tickers):
             result = get_value_score(t)
             if result:
                 data.append(result)
+            progress_bar.progress((i + 1) / len(all_tickers))
         
         df = pd.DataFrame(data)
         df = df.sort_values('Value Score', ascending=False)
@@ -96,7 +97,7 @@ if refresh or st.button("🔄 REFRESH & RANK ALL STOCKS"):
         if category != "All":
             df = df[df['Industry'].str.contains(category, case=False, na=False)]
         
-        st.success(f"**D484M4884 Value Rankings** — {category if category != 'All' else 'All Industries'}")
+        st.success(f"**D484M4884 Rankings Complete** — {len(df)} stocks analyzed")
 
         st.markdown("### 🏆 Top 10 Best Value for Money")
         st.dataframe(df.head(10), use_container_width=True, height=400)
@@ -104,17 +105,10 @@ if refresh or st.button("🔄 REFRESH & RANK ALL STOCKS"):
         st.markdown("### 📊 Full Ranked List")
         st.dataframe(df, use_container_width=True, height=700)
 
-        st.markdown("### 📌 Metric Descriptions")
-        st.markdown("""
-        - **Value Score**: Higher = better value for money (valuation + growth + upside).
-        - **Forward P/E**: Lower usually = better value.
-        - **Target Upside %**: Analyst expected growth.
-        """)
-
         csv = df.to_csv(index=False)
         st.download_button("⬇️ Download Full Report", csv, "d484m4884_value_picks.csv")
 
-st.caption("**D484M4884 Principle**: True value grows beneath the surface. Scan regularly with a growth mindset.")
+st.caption("**D484M4884 Wisdom**: Speed improves with lower scan depth. True value rewards patience and consistency.")
 
     
      
