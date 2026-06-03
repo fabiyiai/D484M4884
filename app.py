@@ -3,11 +3,10 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
 
-st.set_page_config(page_title="Mercedes-AMG Intrinsic Velocity", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Mercedes-AMG Value Scanner", layout="wide")
 
-# Deep Black + Petronas Blue Mercedes F1 Theme
+# Mercedes F1 Black + Blue Theme
 st.markdown("""
 <style>
     .stApp {background-color: #000000; color: #E5E5E5;}
@@ -16,128 +15,97 @@ st.markdown("""
         color: white;
         font-size: 20px;
         font-weight: bold;
-        padding: 14px 40px;
+        padding: 14px;
         border-radius: 50px;
         width: 100%;
     }
-    h1 {color: #00A19C; text-align: center; font-family: 'Arial Black', sans-serif;}
-    .stDataFrame {background-color: #111111;}
-    .red-alert {color: #FF0000; font-weight: bold; font-size: 18px;}
+    h1 {color: #00A19C; text-align: center;}
+    .high-value {color: #00FF9F; font-weight: bold;}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🏎️ MERCEDES-AMG INTRINSIC VELOCITY SCANNER")
-st.markdown("**Silver Arrows Precision** — HPC • Crypto • Space • Expert Targets")
+st.title("🏎️ MERCEDES-AMG VALUE SCANNER")
+st.markdown("**Best Value for Money Investments** — HPC • Crypto • Space")
 
 # Sidebar
-st.sidebar.header("⚙️ Race Controls")
-sector = st.sidebar.selectbox("Focus Sector", ["All", "HPC/AI", "Crypto", "Space"])
-num_stocks = st.sidebar.slider("Scan Depth", 100, 800, 350)
-score_threshold = st.sidebar.slider("Minimum Velocity Score", 0.4, 0.9, 0.60, 0.01)
+st.sidebar.header("Race Controls")
+category = st.sidebar.selectbox("Select Category", ["All", "HPC/AI", "Crypto", "Space"])
+refresh = st.sidebar.button("Refresh Market Data")
 
-# Full HPC Universe + Other Categories
-hpc_tickers = ['NVDA','AMD','TSM','AVGO','MU','ASML','AMAT','LRCX','ANET','SMCI','VRT',
-               'KLAC','ONTO','ARM','MRVL','CRWD','PLTR','DELL','WDC','STX','ORCL','INTC',
-               'ALAB','CRDO']
-
+# Full Stock Universe
+hpc_tickers = ['NVDA','AMD','TSM','AVGO','MU','ASML','AMAT','LRCX','ANET','SMCI','VRT','KLAC','ONTO','ARM','MRVL','CRWD','PLTR','DELL','WDC','STX','ORCL','INTC','ALAB','CRDO']
 crypto_tickers = ['COIN','MSTR','RIOT','MARA','HOOD','SQ']
 space_tickers = ['RKLB','ASTS','LUNR','PL','KTOS','LDOS','SPCE']
+broad = ['AAPL','MSFT','AMZN','META','GOOGL']
 
-all_tickers = list(set(hpc_tickers + crypto_tickers + space_tickers + ['AAPL','MSFT','AMZN','META','GOOGL']))
+all_tickers = list(set(hpc_tickers + crypto_tickers + space_tickers + broad))
 
-@st.cache_data
-def load_tickers():
-    return all_tickers[:num_stocks]
-
-tickers = load_tickers()
-
-def get_intrinsic_score(ticker):
+def get_value_score(ticker):
     try:
         stock = yf.Ticker(ticker)
         info = stock.info
-        current_price = info.get('currentPrice') or info.get('regularMarketPrice')
-        if not current_price: return None
+        price = info.get('currentPrice') or info.get('regularMarketPrice')
+        if not price: return None
         
-        target_mean = info.get('targetMeanPrice', np.nan)
-        debt_eq = info.get('debtToEquity', np.nan)
-        eps = info.get('trailingEps', np.nan)
+        pe = info.get('forwardPE', np.nan)
+        pb = info.get('priceToBook', np.nan)
+        target = info.get('targetMeanPrice', np.nan)
+        upside = (target - price) / price * 100 if not np.isnan(target) else 0
         growth = info.get('earningsGrowth', 0) or 0
+        debt = info.get('debtToEquity', np.nan)
         
-        debt_score = max(0, 100 - (debt_eq or 100)) / 100
-        target_upside = max(0, (target_mean - current_price) / current_price) if not np.isnan(target_mean) else 0
-        intrinsic_est = eps * (8.5 + 2 * growth * 100) if eps else current_price
-        graham_margin = max(0, (intrinsic_est - current_price) / current_price)
+        # Value for Money Score (higher = better value)
+        pe_score = max(0, (50 - min(pe, 50)) / 50) if not np.isnan(pe) else 0.4
+        pb_score = max(0, (10 - min(pb, 10)) / 10) if not np.isnan(pb) else 0.4
+        upside_score = min(max(upside / 50, 0), 1)
+        growth_score = min(growth * 2, 1)
+        debt_score = max(0, (100 - min(debt or 100, 100))) / 100
         
-        score = (0.35 * debt_score + 0.35 * target_upside + 0.2 * graham_margin + 0.1 * 0.6)
-        
-        is_deep_undervalued = (score > 0.75 and target_upside > 0.25)
+        value_score = round((pe_score*0.25 + pb_score*0.2 + upside_score*0.25 + growth_score*0.2 + debt_score*0.1) * 100, 1)
         
         return {
             'Ticker': ticker,
-            'Price': round(current_price, 2),
-            'Expert Target': round(target_mean, 2) if not np.isnan(target_mean) else 'N/A',
-            'Target Upside %': round(target_upside * 100, 1),
-            'Debt/Eq': round(debt_eq, 1) if debt_eq else 'N/A',
-            'Intrinsic Score': round(score, 3),
-            'Growth %': round(growth * 100, 1),
-            'Deep Value Alert': '🔴 STRONG BUY - Significantly Undervalued' if is_deep_undervalued else ''
+            'Price': round(price, 2),
+            'Forward P/E': round(pe, 2) if not np.isnan(pe) else 'N/A',
+            'P/B': round(pb, 2) if not np.isnan(pb) else 'N/A',
+            'Target Upside %': round(upside, 1),
+            'Growth %': round(growth*100, 1),
+            'Value Score': value_score,
+            'Category': 'HPC/AI' if ticker in hpc_tickers else 'Crypto' if ticker in crypto_tickers else 'Space' if ticker in space_tickers else 'Broad'
         }
     except:
         return None
 
-# Prominent Scan Button
-if st.button("🏁 SCAN THE TRACK NOW"):
-    with st.spinner("Pushing for Pole Position..."):
-        results = []
-        progress = st.progress(0)
+if refresh or st.button("🏁 REFRESH & RANK ALL STOCKS"):
+    with st.spinner("Loading real-time value rankings..."):
+        data = []
+        for t in all_tickers:
+            result = get_value_score(t)
+            if result:
+                data.append(result)
         
-        for i, t in enumerate(tickers):
-            data = get_intrinsic_score(t)
-            if data and data['Intrinsic Score'] > score_threshold:
-                if sector == "All" or \
-                   (sector == "HPC/AI" and t in hpc_tickers) or \
-                   (sector == "Crypto" and t in crypto_tickers) or \
-                   (sector == "Space" and t in space_tickers):
-                    results.append(data)
-            progress.progress((i + 1) / len(tickers))
+        df = pd.DataFrame(data)
+        df = df.sort_values('Value Score', ascending=False)
         
-        if results:
-            df = pd.DataFrame(results)
-            df = df.sort_values('Intrinsic Score', ascending=False)
-            
-            st.success(f"🏆 {len(df)} High-Velocity Opportunities Found")
-            
-            # Red Alerts Section
-            alerts = df[df['Deep Value Alert'] != '']
-            if not alerts.empty:
-                st.markdown("### 🔴 RED ALERT — Deep Value Signals")
-                st.dataframe(alerts[['Ticker','Price','Expert Target','Target Upside %','Intrinsic Score','Deep Value Alert']], 
-                           use_container_width=True)
-            
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                fig = px.bar(df.head(15), x='Ticker', y='Target Upside %', 
-                            color='Intrinsic Score', color_continuous_scale=['#C8C8C8', '#00A19C'],
-                            title="🚀 Expert Growth Potential")
-                fig.update_layout(template="plotly_dark", plot_bgcolor="#111111")
-                st.plotly_chart(fig, use_container_width=True)
-            
-            with col2:
-                top = df.iloc[0]
-                fig_gauge = go.Figure(go.Indicator(
-                    mode="gauge+number",
-                    value=top['Intrinsic Score'] * 100,
-                    title={'text': f"Top Pick: {top['Ticker']}"},
-                    gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00A19C"}}))
-                st.plotly_chart(fig_gauge, use_container_width=True)
-            
-            st.dataframe(df.head(30), use_container_width=True, height=700)
-            
-            csv = df.to_csv(index=False)
-            st.download_button("⬇️ Download Full Pit Report", csv, "mercedes_intrinsic_picks.csv")
-        else:
-            st.warning("No cars qualified this session. Lower threshold.")
+        # Filter by category
+        if category != "All":
+            df = df[df['Category'] == category]
+        
+        st.success(f"Top Value-for-Money Stocks — Sorted by Score")
 
-st.caption("**Mercedes-AMG Wisdom**: The mycelium of HPC powers the future. Red alerts reveal hidden intrinsic value. Scan consistently, invest with discipline. Correlation ≠ causation.")
+        # Top Value Highlights
+        st.markdown("### 🏆 Top 10 Best Value for Money")
+        st.dataframe(df.head(10)[['Ticker','Price','Forward P/E','Target Upside %','Growth %','Value Score']], 
+                    use_container_width=True, height=400)
 
+        # Full Category View
+        st.markdown(f"### 📊 All {category if category != 'All' else 'Stocks'} Ranked")
+        st.dataframe(df[['Ticker','Category','Price','Forward P/E','Target Upside %','Growth %','Value Score']], 
+                    use_container_width=True, height=700)
+
+        csv = df.to_csv(index=False)
+        st.download_button("⬇️ Download Full Value Report", csv, "mercedes_value_picks.csv")
+
+st.caption("**Mercedes-AMG Philosophy**: Best value for money compounds like championship points. Higher Value Score = stronger combination of price vs potential. Always verify before investing.")
     
+     
