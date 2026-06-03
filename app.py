@@ -5,7 +5,7 @@ import numpy as np
 
 st.set_page_config(page_title="D484M4884 HPC Scanner", layout="wide")
 
-# Deep Black + Blue Theme
+# Deep Black + Petronas Blue Theme
 st.markdown("""
 <style>
     .stApp {background-color: #000000; color: #E5E5E5;}
@@ -24,7 +24,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("D484M4884 HPC VALUE SCANNER")
-st.markdown("**Best Value for Money in High Performance Computing** (AI Infrastructure + Compute + Miners)")
+st.markdown("**Best Value for Money in High Performance Computing** — Blue = Strong Buy Signal")
 
 # Sidebar
 st.sidebar.header("Controls")
@@ -83,21 +83,26 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
             st.success(f"✅ HPC Scan Complete — {len(df)} stocks")
 
             st.markdown("### 🏆 Top Value HPC Stocks")
-            st.dataframe(df.head(15), use_container_width=True)
-            
-            st.markdown("### 📊 Full HPC Ranked List")
-            st.dataframe(df, use_container_width=True, height=600)
 
-            # === METRIC DESCRIPTIONS ===
+            # Highlight function - Mercedes Blue for strong value
+            def highlight_value(val):
+                if isinstance(val, (int, float)) and val >= 75:
+                    return 'background-color: #00A19C; color: white; font-weight: bold;'
+                return ''
+
+            styled_df = df.style.applymap(highlight_value, subset=['Value Score'])
+            
+            st.dataframe(styled_df, use_container_width=True, height=700)
+
+            # Metric Descriptions
             st.markdown("### 📌 Metric Descriptions")
             st.markdown("""
-            - **Ticker**: Stock symbol
             - **Price**: Current market price per share
-            - **Forward P/E**: Expected price-to-earnings ratio for the next year. **Lower = better value**
-            - **P/B**: Price-to-Book ratio. Shows if the stock is cheap relative to its assets. **Lower = better value**
-            - **Target Upside %**: Analyst consensus price target vs current price. Higher = more growth expected
-            - **Growth %**: Expected earnings growth rate
-            - **Value Score**: Overall score (0-100). **Higher = Better value for money** (combines valuation, growth, upside & debt health)
+            - **Forward P/E**: Expected P/E ratio. Lower is generally better value.
+            - **P/B**: Price-to-Book ratio. Lower usually indicates better value.
+            - **Target Upside %**: Analyst expected price increase.
+            - **Growth %**: Expected earnings growth.
+            - **Value Score**: Overall score (0-100). **Blue highlight = Strong Buy Signal** (≥75)
             """)
             
             csv = df.to_csv(index=False)
@@ -105,7 +110,7 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
         else:
             st.warning("No data received. Try again in a few minutes.")
 
-st.caption("**D484M4884 Principle**: True value is found in the mycelium beneath the surface. Higher Value Score = stronger investment efficiency.")
+st.caption("**D484M4884 Principle**: Blue highlights reveal timely value opportunities in the HPC mycelium network.")
          
 
 
