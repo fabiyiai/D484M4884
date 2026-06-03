@@ -95,7 +95,23 @@ if refresh or st.button("🔄 SCAN & RANK STOCKS"):
             st.error("No data returned. Try again or reduce scan size.")
         else:
             df = pd.DataFrame(data)
-            df =
+            df = df.sort_values('Value Score', ascending=False)
+            
+            if category != "All":
+                df = df[df['Industry'].str.contains(category, case=False, na=False)]
+            
+            st.success(f"**D484M4884 Rankings** — {len(df)} stocks analyzed")
+
+            st.markdown("### 🏆 Top 10 Best Value for Money")
+            st.dataframe(df.head(10), use_container_width=True, height=400)
+
+            st.markdown("### 📊 Full Ranked List")
+            st.dataframe(df, use_container_width=True, height=700)
+
+            csv = df.to_csv(index=False)
+            st.download_button("⬇️ Download Full Report", csv, "d484m4884_value_picks.csv")
+
+st.caption("**D484M4884 Principle**: Patience reveals hidden value. Lower scan size = faster results.")
 
 
     
