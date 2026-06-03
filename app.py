@@ -3,7 +3,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 
-st.set_page_config(page_title="D484M4884 Value Scanner", layout="wide")
+st.set_page_config(page_title="D484M4884 HPC Scanner", layout="wide")
 
 # Deep Black + Blue Theme
 st.markdown("""
@@ -23,95 +23,81 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("D484M4884 VALUE SCANNER")
-st.markdown("**Best Value for Money** — Categorized by Industry")
+st.title("D484M4884 HPC VALUE SCANNER")
+st.markdown("**Best Value for Money in High Performance Computing** (AI + Compute Infrastructure + Miners)")
 
 # Sidebar
 st.sidebar.header("Controls")
-category = st.sidebar.selectbox("Select Industry/Category", 
-    ["All", "HPC/AI", "Crypto", "Space", "Technology", "Healthcare", "Finance", "Energy", "Consumer"])
-num_stocks = st.sidebar.slider("Number of Stocks to Scan", 50, 300, 120)  # Reduced default for speed
+num_stocks = st.sidebar.slider("Scan Size", 20, 120, 60)
 
-refresh = st.sidebar.button("🔄 REFRESH & RANK STOCKS")
+if st.button("🔄 SCAN HPC STOCKS NOW"):
+    with st.spinner("Fetching HPC & Compute data..."):
+        # Combined HPC + Miners from your image
+        hpc_tickers = [
+            'NVDA','AMD','TSM','AVGO','MU','ASML','SMCI','ANET','VRT','MRVL','KLAC','ARM',
+            'IREN','WULF','HUT','RIOT','CIFR','CORZ','MARA','CLSK','BTDR','HIVE','BTBT'
+        ]
 
-@st.cache_data(ttl=1800)
-def load_all_tickers():
-    url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv"
-    df = pd.read_csv(url)
-    sp500 = df['Symbol'].tolist()
-    extra = ['RKLB','ASTS','LUNR','COIN','MSTR','RIOT','MARA']
-    return list(set(sp500 + extra))
-
-all_tickers = load_all_tickers()[:num_stocks]
-
-def get_value_score(ticker):
-    try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
-        price = info.get('currentPrice') or info.get('regularMarketPrice')
-        if not price: return None
-        
-        pe = info.get('forwardPE', np.nan)
-        pb = info.get('priceToBook', np.nan)
-        target = info.get('targetMeanPrice', np.nan)
-        upside = (target - price) / price * 100 if not np.isnan(target) else 0
-        growth = info.get('earningsGrowth', 0) or 0
-        debt = info.get('debtToEquity', np.nan)
-        sector = info.get('sector', 'Other')
-        
-        pe_score = max(0, (50 - min(pe, 50)) / 50) if not np.isnan(pe) else 0.4
-        pb_score = max(0, (10 - min(pb, 10)) / 10) if not np.isnan(pb) else 0.4
-        upside_score = min(max(upside / 50, 0), 1)
-        growth_score = min(growth * 2, 1)
-        debt_score = max(0, (100 - min(debt or 100, 100))) / 100
-        
-        value_score = round((pe_score*0.25 + pb_score*0.2 + upside_score*0.25 + growth_score*0.2 + debt_score*0.1) * 100, 1)
-        
-        return {
-            'Ticker': ticker,
-            'Price': round(price, 2),
-            'Forward P/E': round(pe, 2) if not np.isnan(pe) else 'N/A',
-            'P/B': round(pb, 2) if not np.isnan(pb) else 'N/A',
-            'Target Upside %': round(upside, 1),
-            'Growth %': round(growth*100, 1),
-            'Value Score': value_score,
-            'Industry': sector
-        }
-    except:
-        return None
-
-if refresh or st.button("🔄 SCAN & RANK STOCKS"):
-    with st.spinner("Connecting to market mycelium... (20-45 seconds)"):
-        progress_bar = st.progress(0)
         data = []
+        progress_bar = st.progress(0)
         
-        for i, t in enumerate(all_tickers):
-            result = get_value_score(t)
-            if result:
-                data.append(result)
-            progress_bar.progress((i + 1) / len(all_tickers))
+        for i, t in enumerate(hpc_tickers[:num_stocks]):
+            try:
+                stock = yf.Ticker(t)
+                info = stock.info
+                price = info.get('currentPrice') or info.get('regularMarketPrice')
+                if not price:
+                    continue
+                
+                pe = info.get('forwardPE', np.nan)
+                pb = info.get('priceToBook', np.nan)
+                target = info.get('targetMeanPrice', np.nan)
+                upside = (target - price) / price * 100 if not np.isnan(target) and price else 0
+                growth = info.get('earningsGrowth', 0) or 0
+                debt = info.get('debtToEquity', np.nan)
+                
+                pe_score = max(0, (50 - min(pe, 50)) / 50) if not np.isnan(pe) else 0.4
+                pb_score = max(0, (10 - min(pb, 10)) / 10) if not np.isnan(pb) else 0.4
+                upside_score = min(max(upside / 50, 0), 1)
+                growth_score = min(growth * 2, 1)
+                debt_score = max(0, (100 - min(debt or 100, 100))) / 100
+                
+                value_score = round((pe_score*0.25 + pb_score*0.2 + upside_score*0.25 + growth_score*0.2 + debt_score*0.1) * 100, 1)
+                
+                data.append({
+                    'Ticker': t,
+                    'Price': round(price, 2),
+                    'Forward P/E': round(pe, 2) if not np.isnan(pe) else 'N/A',
+                    'P/B': round(pb, 2) if not np.isnan(pb) else 'N/A',
+                    'Target Upside %': round(upside, 1),
+                    'Growth %': round(growth*100, 1),
+                    'Value Score': value_score
+                })
+            except:
+                pass
+            
+            progress_bar.progress((i + 1) / len(hpc_tickers))
         
-        if not data:
-            st.error("No data returned. Try again or reduce scan size.")
-        else:
+        if data:
             df = pd.DataFrame(data)
             df = df.sort_values('Value Score', ascending=False)
             
-            if category != "All":
-                df = df[df['Industry'].str.contains(category, case=False, na=False)]
+            st.success(f"✅ HPC Scan Complete — {len(df)} stocks")
             
-            st.success(f"**D484M4884 Rankings** — {len(df)} stocks analyzed")
-
-            st.markdown("### 🏆 Top 10 Best Value for Money")
-            st.dataframe(df.head(10), use_container_width=True, height=400)
-
-            st.markdown("### 📊 Full Ranked List")
-            st.dataframe(df, use_container_width=True, height=700)
-
+            st.markdown("### 🏆 Top Value HPC Stocks")
+            st.dataframe(df.head(15), use_container_width=True)
+            
+            st.markdown("### 📊 Full HPC List")
+            st.dataframe(df, use_container_width=True, height=600)
+            
             csv = df.to_csv(index=False)
-            st.download_button("⬇️ Download Full Report", csv, "d484m4884_value_picks.csv")
+            st.download_button("⬇️ Download HPC Report", csv, "d484m4884_hpc_picks.csv")
+        else:
+            st.warning("No data received. Try again in a few minutes.")
 
-st.caption("**D484M4884 Principle**: Patience reveals hidden value. Lower scan size = faster results.")
+st.caption("**D484M4884 Focus**: High Performance Computing & Compute Infrastructure. Higher Value Score = better value for money.")
+
+
 
 
     
