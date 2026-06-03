@@ -5,35 +5,40 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-st.set_page_config(page_title="Mercedes Intrinsic Velocity", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Mercedes-AMG Intrinsic Velocity", layout="wide", initial_sidebar_state="expanded")
 
-# Mercedes F1 Dark Theme
+# Strong Mercedes F1 Black + Petronas Blue Theme
 st.markdown("""
 <style>
-    .stApp {background-color: #0A0A0A; color: #E5E5E5;}
-    .stButton>button {background-color: #00A19C; color: white; font-weight: bold;}
-    h1, h2 {color: #C8C8C8; font-family: 'Arial Black', sans-serif;}
+    .stApp {
+        background-color: #000000;
+        color: #E5E5E5;
+    }
+    .stButton>button {
+        background-color: #00A19C; /* Petronas Blue */
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        padding: 12px 30px;
+        border-radius: 50px;
+        width: 100%;
+    }
+    h1 {
+        color: #00A19C;
+        font-family: 'Arial Black', sans-serif;
+        text-align: center;
+    }
+    .stDataFrame {background-color: #111111;}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🏎️ Mercedes-AMG Intrinsic Velocity Scanner")
-st.markdown("**Silver Arrow Precision**: HPC • Crypto • Space • True Intrinsic Value with Expert Targets")
+st.title("🏎️ MERCEDES-AMG INTRINSIC VELOCITY SCANNER")
+st.markdown("**Silver Arrows in the Market** — HPC • Crypto • Space • Expert Price Targets")
 
 # Sidebar
 st.sidebar.header("⚙️ Race Controls")
-sector = st.sidebar.selectbox("Focus Sector", ["All", "HPC/AI", "Crypto", "Space", "Broad Market"])
+sector = st.sidebar.selectbox("Focus Sector", ["All", "HPC/AI", "Crypto", "Space"])
 num_stocks = st.sidebar.slider("Scan Depth", 100, 600, 250)
-score_threshold = st.sidebar.slider("Minimum Velocity Score", 0.4, 0.9, 0.60, 0.01)
+score_threshold = st.sidebar.slider("Minimum Velocity Score", 0.4, 0.9,
 
-# Expanded Ticker Universe
-base_tickers = ['AAPL','MSFT','GOOGL','AMZN','META','NVDA','AMD','TSM','AVGO','MU','ASML','AMAT','LRCX']  # HPC
-crypto_tickers = ['COIN','MSTR','RIOT','MARA','HOOD','SQ']
-space_tickers = ['RKLB','ASTS','LUNR','PL','KTOS','LDOS']
-
-all_tickers = list(set(base_tickers + crypto_tickers + space_tickers + 
-                      ['JPM','XOM','JNJ','DIS','NFLX']))  # Broader mix
-
-@st.cache_data
-def load_tickers():
-    return all_tickers
     
