@@ -26,11 +26,9 @@ st.title("D464M4664 HPC VALUE SCANNER")
 st.markdown("**Best Value for Money in High Performance Computing**")
 
 if st.button("🔄 SCAN HPC STOCKS NOW"):
-    with st.spinner("Fetching HPC data..."):
-        hpc_tickers = [
-            'NVDA','AMD','TSM','AVGO','MU','ASML','SMCI','ANET','VRT','MRVL','KLAC','ARM',
-            'IREN','WULF','HUT','RIOT','CIFR','CORZ','MARA','CLSK','BTDR','HIVE','BTBT'
-        ]
+    with st.spinner("Scanning HPC stocks..."):
+        hpc_tickers = ['NVDA','AMD','TSM','AVGO','MU','ASML','SMCI','ANET','VRT','MRVL',
+                       'KLAC','ARM','IREN','WULF','HUT','RIOT','CIFR','CORZ','MARA','CLSK']
 
         data = []
         progress_bar = st.progress(0)
@@ -40,28 +38,28 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
                 stock = yf.Ticker(t)
                 info = stock.info
                 price = info.get('currentPrice') or info.get('regularMarketPrice')
-                if not price: continue
+                if not price: 
+                    progress_bar.progress((i + 1) / len(hpc_tickers))
+                    continue
                 
                 pe = info.get('forwardPE', np.nan)
                 pb = info.get('priceToBook', np.nan)
                 target = info.get('targetMeanPrice', np.nan)
                 upside = (target - price) / price * 100 if not np.isnan(target) and price else 0
                 growth = info.get('earningsGrowth', 0) or 0
-                debt = info.get('debtToEquity', np.nan)
                 
                 pe_score = max(0, (50 - min(pe, 50)) / 50) if not np.isnan(pe) else 0.4
                 pb_score = max(0, (10 - min(pb, 10)) / 10) if not np.isnan(pb) else 0.4
                 upside_score = min(max(upside / 50, 0), 1)
                 growth_score = min(growth * 2, 1)
-                debt_score = max(0, (100 - min(debt or 100, 100))) / 100
                 
-                value_score = round((pe_score*0.25 + pb_score*0.2 + upside_score*0.25 + growth_score*0.2 + debt_score*0.1) * 100, 1)
+                value_score = round((pe_score*0.3 + pb_score*0.2 + upside_score*0.3 + growth_score*0.2) * 100, 1)
                 
-                # Improved Buy/Sell Logic
-                if value_score >= 68 and pe > 0 and upside > 5:
+                # Recommendation Logic
+                if value_score >= 68 and pe > 0 and upside > 8:
                     recommendation = "🟢 BUY"
-                elif value_score >= 55 and upside > 15:
-                    recommendation = "🟡 HOLD / WATCH"
+                elif value_score >= 55:
+                    recommendation = "🟡 HOLD"
                 else:
                     recommendation = "🔴 SELL / AVOID"
                 
@@ -83,7 +81,37 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
         if data:
             df = pd.DataFrame(data)
             df = df.sort_values('Value Score', ascending=False)
+            
+            st.success(f"✅ Scan Complete — {len(df)} HPC stocks")
 
+            # Highlighting: Blue for positive P/E, Red for negative
+            def highlight_pe(row):
+                styles = [''] * len(row)
+                pe_val = row['Forward P/E']
+                if isinstance(pe_val, (int, float)):
+                    if pe_val < 0:
+                        styles[2] = 'background-color: #FF3333; color: white; font-weight: bold;'
+                    else:
+                        styles[2] = 'background-color: #00A19C; color: white; font-weight: bold;'
+                return styles
+
+            styled_df = df.style.apply(highlight_pe, axis=1)
+            
+            st.dataframe(styled_df, use_container_width=True, height=650)
+
+            st.markdown("### 📌 Metric Descriptions")
+            st.markdown("""
+            - **Forward P/E**: Blue = Positive (better) | Red = Negative (riskier)  
+            - **Value Score**: Higher = Better overall value  
+            - **Recommendation**: 🟢 BUY = Strong signals | 🟡 HOLD | 🔴 SELL/AVOID
+            """)
+            
+            csv = df.to_csv(index=False)
+            st.download_button("⬇️ Download Report", csv, "d464m4664_hpc_picks.csv")
+        else:
+            st.error("Could not fetch data. Please try again in a few minutes.")
+
+st.caption("**D464M4664 Principle**: Consistent scanning reveals hidden value over time.")
 
 
 
