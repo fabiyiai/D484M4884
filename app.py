@@ -24,15 +24,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("D484M4884 HPC VALUE SCANNER")
-st.markdown("**Best Value for Money in High Performance Computing** (AI + Compute Infrastructure + Miners)")
+st.markdown("**Best Value for Money in High Performance Computing** (AI Infrastructure + Compute + Miners)")
 
 # Sidebar
 st.sidebar.header("Controls")
 num_stocks = st.sidebar.slider("Scan Size", 20, 120, 60)
 
 if st.button("🔄 SCAN HPC STOCKS NOW"):
-    with st.spinner("Fetching HPC & Compute data..."):
-        # Combined HPC + Miners from your image
+    with st.spinner("Fetching HPC data..."):
         hpc_tickers = [
             'NVDA','AMD','TSM','AVGO','MU','ASML','SMCI','ANET','VRT','MRVL','KLAC','ARM',
             'IREN','WULF','HUT','RIOT','CIFR','CORZ','MARA','CLSK','BTDR','HIVE','BTBT'
@@ -46,8 +45,7 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
                 stock = yf.Ticker(t)
                 info = stock.info
                 price = info.get('currentPrice') or info.get('regularMarketPrice')
-                if not price:
-                    continue
+                if not price: continue
                 
                 pe = info.get('forwardPE', np.nan)
                 pb = info.get('priceToBook', np.nan)
@@ -83,19 +81,32 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
             df = df.sort_values('Value Score', ascending=False)
             
             st.success(f"✅ HPC Scan Complete — {len(df)} stocks")
-            
+
             st.markdown("### 🏆 Top Value HPC Stocks")
             st.dataframe(df.head(15), use_container_width=True)
             
-            st.markdown("### 📊 Full HPC List")
+            st.markdown("### 📊 Full HPC Ranked List")
             st.dataframe(df, use_container_width=True, height=600)
+
+            # === METRIC DESCRIPTIONS ===
+            st.markdown("### 📌 Metric Descriptions")
+            st.markdown("""
+            - **Ticker**: Stock symbol
+            - **Price**: Current market price per share
+            - **Forward P/E**: Expected price-to-earnings ratio for the next year. **Lower = better value**
+            - **P/B**: Price-to-Book ratio. Shows if the stock is cheap relative to its assets. **Lower = better value**
+            - **Target Upside %**: Analyst consensus price target vs current price. Higher = more growth expected
+            - **Growth %**: Expected earnings growth rate
+            - **Value Score**: Overall score (0-100). **Higher = Better value for money** (combines valuation, growth, upside & debt health)
+            """)
             
             csv = df.to_csv(index=False)
             st.download_button("⬇️ Download HPC Report", csv, "d484m4884_hpc_picks.csv")
         else:
             st.warning("No data received. Try again in a few minutes.")
 
-st.caption("**D484M4884 Focus**: High Performance Computing & Compute Infrastructure. Higher Value Score = better value for money.")
+st.caption("**D484M4884 Principle**: True value is found in the mycelium beneath the surface. Higher Value Score = stronger investment efficiency.")
+         
 
 
 
