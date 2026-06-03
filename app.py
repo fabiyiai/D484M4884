@@ -12,7 +12,7 @@ st.markdown("""
 <style>
     .stApp {background-color: #000000; color: #E5E5E5;}
     .stButton>button {
-        background-color: #00A19C; /* Petronas Blue */
+        background-color: #00A19C;
         color: white;
         font-size: 20px;
         font-weight: bold;
@@ -32,11 +32,14 @@ st.markdown("**Silver Arrows Precision** — HPC • Crypto • Space • Expert
 # Sidebar
 st.sidebar.header("⚙️ Race Controls")
 sector = st.sidebar.selectbox("Focus Sector", ["All", "HPC/AI", "Crypto", "Space"])
-num_stocks = st.sidebar.slider("Scan Depth", 100, 800, 300)
+num_stocks = st.sidebar.slider("Scan Depth", 100, 800, 350)
 score_threshold = st.sidebar.slider("Minimum Velocity Score", 0.4, 0.9, 0.60, 0.01)
 
-# Expanded Tickers
-hpc_tickers = ['NVDA','AMD','TSM','AVGO','MU','ASML','AMAT','LRCX','ANET','SMCI','VRT','KLAC','ONTO','ARM','MRVL','CRWD','PLTR','DELL','WDC','STX','ORCL']
+# Full HPC Universe + Other Categories
+hpc_tickers = ['NVDA','AMD','TSM','AVGO','MU','ASML','AMAT','LRCX','ANET','SMCI','VRT',
+               'KLAC','ONTO','ARM','MRVL','CRWD','PLTR','DELL','WDC','STX','ORCL','INTC',
+               'ALAB','CRDO']
+
 crypto_tickers = ['COIN','MSTR','RIOT','MARA','HOOD','SQ']
 space_tickers = ['RKLB','ASTS','LUNR','PL','KTOS','LDOS','SPCE']
 
@@ -82,7 +85,7 @@ def get_intrinsic_score(ticker):
     except:
         return None
 
-# Big Scan Button
+# Prominent Scan Button
 if st.button("🏁 SCAN THE TRACK NOW"):
     with st.spinner("Pushing for Pole Position..."):
         results = []
@@ -104,11 +107,12 @@ if st.button("🏁 SCAN THE TRACK NOW"):
             
             st.success(f"🏆 {len(df)} High-Velocity Opportunities Found")
             
-            # Red Alerts
+            # Red Alerts Section
             alerts = df[df['Deep Value Alert'] != '']
             if not alerts.empty:
-                st.markdown("### 🔴 RED ALERT - Deep Value Opportunities")
-                st.dataframe(alerts[['Ticker','Price','Expert Target','Target Upside %','Intrinsic Score','Deep Value Alert']], use_container_width=True)
+                st.markdown("### 🔴 RED ALERT — Deep Value Signals")
+                st.dataframe(alerts[['Ticker','Price','Expert Target','Target Upside %','Intrinsic Score','Deep Value Alert']], 
+                           use_container_width=True)
             
             col1, col2 = st.columns([2, 1])
             with col1:
@@ -132,8 +136,8 @@ if st.button("🏁 SCAN THE TRACK NOW"):
             csv = df.to_csv(index=False)
             st.download_button("⬇️ Download Full Pit Report", csv, "mercedes_intrinsic_picks.csv")
         else:
-            st.warning("No cars qualified. Lower threshold.")
+            st.warning("No cars qualified this session. Lower threshold.")
 
-st.caption("**Mercedes-AMG Edge**: True intrinsic value across HPC, Crypto & Space. Red alerts highlight deep undervaluation. Correlation ≠ causation — verify before full throttle.")
+st.caption("**Mercedes-AMG Wisdom**: The mycelium of HPC powers the future. Red alerts reveal hidden intrinsic value. Scan consistently, invest with discipline. Correlation ≠ causation.")
 
     
