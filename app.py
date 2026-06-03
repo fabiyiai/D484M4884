@@ -2,8 +2,6 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import numpy as np
-from datetime import datetime
-import plotly.express as px
 
 st.set_page_config(page_title="🌌 Intrinsic Mycelium Scanner", layout="wide")
 st.title("🌌 Intrinsic Value Stock Scanner")
@@ -55,18 +53,28 @@ def get_intrinsic_score(ticker):
     except:
         return None
 
-if st.button("Scan Market Now"):
-    with st.spinner("Scanning..."):
+if st.button("🌍 Scan Market Now"):
+    with st.spinner("Connecting to universal data flows..."):
         results = []
-        for t in tickers:
+        progress = st.progress(0)
+        
+        for i, t in enumerate(tickers):
             data = get_intrinsic_score(t)
             if data and data['Intrinsic Score'] > score_threshold:
                 results.append(data)
-        df = pd.DataFrame(results)
-        df = df.sort_values('Intrinsic Score', ascending=False)
+            progress.progress((i + 1) / len(tickers))
         
-        st.dataframe(df.head(20))
-        csv = df.to_csv(index=False)
-        st.download_button("Download CSV", csv, "undervalued_stocks.csv")
+        if results:
+            df = pd.DataFrame(results)
+            df = df.sort_values('Intrinsic Score', ascending=False)
+            
+            st.success(f"Found {len(df)} aligned opportunities")
+            st.dataframe(df.head(20), use_container_width=True)
+            
+            csv = df.to_csv(index=False)
+            st.download_button("Download CSV for Portfolio", csv, "undervalued_stocks.csv")
+        else:
+            st.warning("No stocks met the threshold. Try lowering the Intrinsic Score Threshold.")
 
-st.caption("Your Intrinsic Value Dashboard - Powered by true metrics")
+st.caption("**Growth Mindset Tip**: Markets are like fungi — value grows beneath the surface. Use this tool consistently.")
+    
