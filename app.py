@@ -4,9 +4,9 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
-st.set_page_config(page_title="Mercedes-AMG Value Scanner", layout="wide")
+st.set_page_config(page_title="D484M4884 Value Scanner", layout="wide")
 
-# Mercedes F1 Black + Blue Theme
+# Deep Black + Petronas Blue Theme
 st.markdown("""
 <style>
     .stApp {background-color: #000000; color: #E5E5E5;}
@@ -20,19 +20,19 @@ st.markdown("""
         width: 100%;
     }
     h1 {color: #00A19C; text-align: center;}
-    .high-value {color: #00FF9F; font-weight: bold;}
+    .metric-title {color: #00A19C; font-weight: bold;}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🏎️ MERCEDES-AMG VALUE SCANNER")
-st.markdown("**Best Value for Money Investments** — HPC • Crypto • Space")
+st.title("D484M4884 VALUE SCANNER")
+st.markdown("**Best Value for Money Across Categories** — HPC • Crypto • Space")
 
 # Sidebar
-st.sidebar.header("Race Controls")
+st.sidebar.header("Controls")
 category = st.sidebar.selectbox("Select Category", ["All", "HPC/AI", "Crypto", "Space"])
 refresh = st.sidebar.button("Refresh Market Data")
 
-# Full Stock Universe
+# Stock Universe
 hpc_tickers = ['NVDA','AMD','TSM','AVGO','MU','ASML','AMAT','LRCX','ANET','SMCI','VRT','KLAC','ONTO','ARM','MRVL','CRWD','PLTR','DELL','WDC','STX','ORCL','INTC','ALAB','CRDO']
 crypto_tickers = ['COIN','MSTR','RIOT','MARA','HOOD','SQ']
 space_tickers = ['RKLB','ASTS','LUNR','PL','KTOS','LDOS','SPCE']
@@ -54,7 +54,6 @@ def get_value_score(ticker):
         growth = info.get('earningsGrowth', 0) or 0
         debt = info.get('debtToEquity', np.nan)
         
-        # Value for Money Score (higher = better value)
         pe_score = max(0, (50 - min(pe, 50)) / 50) if not np.isnan(pe) else 0.4
         pb_score = max(0, (10 - min(pb, 10)) / 10) if not np.isnan(pb) else 0.4
         upside_score = min(max(upside / 50, 0), 1)
@@ -76,8 +75,8 @@ def get_value_score(ticker):
     except:
         return None
 
-if refresh or st.button("🏁 REFRESH & RANK ALL STOCKS"):
-    with st.spinner("Loading real-time value rankings..."):
+if refresh or st.button("🔄 REFRESH & RANK ALL STOCKS"):
+    with st.spinner("Scanning universal data flows..."):
         data = []
         for t in all_tickers:
             result = get_value_score(t)
@@ -87,25 +86,30 @@ if refresh or st.button("🏁 REFRESH & RANK ALL STOCKS"):
         df = pd.DataFrame(data)
         df = df.sort_values('Value Score', ascending=False)
         
-        # Filter by category
         if category != "All":
             df = df[df['Category'] == category]
         
-        st.success(f"Top Value-for-Money Stocks — Sorted by Score")
+        st.success(f"**D484M4884 Value Rankings** — {category if category != 'All' else 'All Categories'}")
 
-        # Top Value Highlights
         st.markdown("### 🏆 Top 10 Best Value for Money")
-        st.dataframe(df.head(10)[['Ticker','Price','Forward P/E','Target Upside %','Growth %','Value Score']], 
-                    use_container_width=True, height=400)
+        st.dataframe(df.head(10), use_container_width=True, height=400)
 
-        # Full Category View
-        st.markdown(f"### 📊 All {category if category != 'All' else 'Stocks'} Ranked")
-        st.dataframe(df[['Ticker','Category','Price','Forward P/E','Target Upside %','Growth %','Value Score']], 
-                    use_container_width=True, height=700)
+        st.markdown("### 📊 Full Ranked List")
+        st.dataframe(df, use_container_width=True, height=700)
+
+        # Metric Explanations
+        st.markdown("### 📌 Metric Descriptions (Hover for Details)")
+        st.markdown("""
+        - **Value Score**: Overall score (0-100). Higher = better value for money (combines valuation, growth, and upside).
+        - **Forward P/E**: Expected price-to-earnings ratio. Lower is generally better value.
+        - **P/B**: Price-to-Book ratio. Shows if you're paying fair price relative to company assets.
+        - **Target Upside %**: Analyst consensus price target vs current price.
+        - **Growth %**: Expected earnings growth rate.
+        """)
 
         csv = df.to_csv(index=False)
-        st.download_button("⬇️ Download Full Value Report", csv, "mercedes_value_picks.csv")
+        st.download_button("⬇️ Download Full Report", csv, "d484m4884_value_picks.csv")
 
-st.caption("**Mercedes-AMG Philosophy**: Best value for money compounds like championship points. Higher Value Score = stronger combination of price vs potential. Always verify before investing.")
+st.caption("**D484M4884 Principle**: True value compounds quietly. Higher Value Score = stronger investment efficiency. Correlation ≠ causation — always do your own research.")
     
      
