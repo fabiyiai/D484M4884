@@ -19,12 +19,11 @@ st.markdown("""
         width: 100%;
     }
     h1 {color: #00A19C; text-align: center;}
-    .stSidebar {background-color: #111111;}
 </style>
 """, unsafe_allow_html=True)
 
 st.title("D464M4664 HPC VALUE SCANNER")
-st.markdown("**Best Value for Money in High Performance Computing** — Blue = Good P/E | Red = Negative P/E")
+st.markdown("**Best Value for Money in High Performance Computing**")
 
 if st.button("🔄 SCAN HPC STOCKS NOW"):
     with st.spinner("Fetching HPC data..."):
@@ -58,11 +57,13 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
                 
                 value_score = round((pe_score*0.25 + pb_score*0.2 + upside_score*0.25 + growth_score*0.2 + debt_score*0.1) * 100, 1)
                 
-                # Buy / Sell Recommendation
-                if value_score >= 72 and pe > 0 and upside > 10:
+                # Improved Buy/Sell Logic
+                if value_score >= 68 and pe > 0 and upside > 5:
                     recommendation = "🟢 BUY"
+                elif value_score >= 55 and upside > 15:
+                    recommendation = "🟡 HOLD / WATCH"
                 else:
-                    recommendation = "🔴 SELL / HOLD"
+                    recommendation = "🔴 SELL / AVOID"
                 
                 data.append({
                     'Ticker': t,
@@ -82,46 +83,6 @@ if st.button("🔄 SCAN HPC STOCKS NOW"):
         if data:
             df = pd.DataFrame(data)
             df = df.sort_values('Value Score', ascending=False)
-            
-            st.success(f"✅ HPC Scan Complete — {len(df)} stocks")
-
-            st.markdown("### 🏆 Top Value HPC Stocks")
-
-            # Styling: Blue for positive P/E, Red for negative P/E, and Recommendation column
-            def highlight_row(row):
-                styles = [''] * len(row)
-                pe_val = row['Forward P/E']
-                
-                if isinstance(pe_val, (int, float)):
-                    if pe_val < 0:
-                        styles[2] = 'background-color: #FF3333; color: white; font-weight: bold;'   # Red
-                    else:
-                        styles[2] = 'background-color: #00A19C; color: white; font-weight: bold;'   # Mercedes Blue
-                
-                return styles
-
-            styled_df = df.style.apply(highlight_row, axis=1)
-            
-            st.dataframe(styled_df, use_container_width=True, height=700)
-
-            # Metric Descriptions
-            st.markdown("### 📌 Metric Descriptions")
-            st.markdown("""
-            - **Price**: Current market price per share  
-            - **Forward P/E**: Expected price-to-earnings ratio. **Blue** = Positive (better), **Red** = Negative (riskier)  
-            - **P/B**: Price-to-Book ratio. Lower = better value  
-            - **Target Upside %**: Analyst expected growth  
-            - **Growth %**: Expected earnings growth  
-            - **Value Score**: Overall value score (0-100)  
-            - **Recommendation**: 🟢 **BUY** = Strong metrics | 🔴 **SELL/HOLD** = Otherwise
-            """)
-            
-            csv = df.to_csv(index=False)
-            st.download_button("⬇️ Download HPC Report", csv, "d464m4664_hpc_picks.csv")
-        else:
-            st.warning("No data received. Try again in a few minutes.")
-
-st.caption("**D464M4664 Principle**: Blue + 🟢 BUY = Strong value opportunity. Always combine with your own research.")
 
 
 
